@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-#import urllib.request, urllib.parse, urllib.error #Use this for Python > 3
-import urllib		#Use this line instead of the previous for Python < 3.0
+# commit to python 3.7+
+import urllib.request, urllib.parse, urllib.error #Use this for Python > 3
 import xml.etree.ElementTree as elementree
 import re
 import string
