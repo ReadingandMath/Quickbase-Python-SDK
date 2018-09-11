@@ -1,14 +1,12 @@
 #!/usr/bin/python
 
-# commit to python 3.7+
+# RMI commits to python 3.7+
 import urllib.request, urllib.parse, urllib.error #Use this for Python > 3
 import xml.etree.ElementTree as elementree
 import re
-import string
 
 class QBConn:
 	def __init__(self,url,appid,token=None, user_token=None,realm=""):
-		
 		self.url = url
 		self.token = token
 		self.user_token = user_token
@@ -19,16 +17,15 @@ class QBConn:
 		self.tables = {}
 
 	def authenticate(self,username=None,password=None):
-		
 		if self.user_token:
 			self.tables = self._getTables()
 			return
-		
-		
+				
 		params = {'act':'API_Authenticate','username':username,'password':password}
 		resp = self.request(params,'main')
 		if self.error != 0:
 			return
+
 		else:
 			self.ticket = resp.find("ticket").text
 			self.tables = self._getTables()
@@ -37,20 +34,16 @@ class QBConn:
 	#Takes a dict of parameter:value pairs and the url extension (main or your table ID, mostly)
 	def request(self,params,url_ext):
 		url = self.url
-		url += url_ext
-		
+		url += url_ext		
 		if self.user_token:
 			params['usertoken'] = self.user_token
 		else:
 			params['ticket'] = self.ticket
 			
-		
 		params['apptoken'] = self.token
 		params['realmhost'] = self.realm
-		#urlparams = urllib.parse.urlencode(params) #Use this line for Python > 3
-		urlparams = urllib.urlencode(params)	#use this line for < Python 3
-		#resp = urllib.request.FancyURLopener().open(url+"?"+urlparams).read() #Use this line for Python > 3
-		resp = urllib.FancyURLopener().open(url+"?"+urlparams).read() #use this line for < Python 3
+		urlparams = urllib.parse.urlencode(params) #Use this line for Python > 3
+		resp = urllib.request.FancyURLopener().open(url+"?"+urlparams).read() #Use this line for Python > 3
 		if re.match('^\<\?xml version=',resp.decode("utf-8")) == None:
 			print("No useful data received")
 			self.error = -1		#No XML data returned
