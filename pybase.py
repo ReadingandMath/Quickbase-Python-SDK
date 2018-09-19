@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# RMI commits to python 3.7+
+# RMI commits to python 3.6.5+
 import urllib.request, urllib.parse, urllib.error #Use this for Python > 3
 import xml.etree.ElementTree as elementree
 import re
