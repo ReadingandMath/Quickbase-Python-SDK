@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 pylint = "*"
+setuptools = "*"
+wheel = "*"
+twine = "*"
 
 [dev-packages]
 
