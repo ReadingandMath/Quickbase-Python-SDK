@@ -1,1 +1,4 @@
 .vscode/
+build/
+dist/
+rmi_qb_sdk.egg-info/
