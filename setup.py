@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-      name='rmi_qb_python',
-      version='0.1.3',
+      name='rmi_qb_sdk',
+      version='0.1.4',
       description='Reading & Math Inc Python SDK for Quick Base',
       long_description=long_description,
       long_description_content_type="text/markdown",
