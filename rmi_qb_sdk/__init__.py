@@ -45,7 +45,7 @@ class QBConn:
 			params['realmhost'] = self.realm
 		urlparams = urllib.parse.urlencode(params)
 		resp = urllib.request.FancyURLopener().open(url+"?"+urlparams).read()
-		if re.match('^\<\?xml version=',resp.decode("utf-8")) == None:
+		if re.match(r'^\<\?xml version=',resp.decode("utf-8")) == None:
 			print("No useful data received")
 			self.error = -1		#No XML data returned
 		else:
@@ -155,7 +155,8 @@ class QBConn:
 					for i in range(where+1,len(tokens)):
 						if (i-where+1)%2 == 0:
 							filt = tokens[i].split("`")
-							querystr += "{'"+tfields[filt[0]]+"'."+filt[1]+".'"+filt[2].replace("\_"," ")+"'}"
+							querystr += "{'"+tfields[filt[0]]+ \
+							"'."+filt[1]+".'"+filt[2].replace(r"\_"," ")+"'}"
 						elif tokens[i] == "AND" or tokens[i] == "OR":
 							querystr += tokens[i]
 						else:
