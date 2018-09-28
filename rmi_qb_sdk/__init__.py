@@ -6,9 +6,9 @@ import xml.etree.ElementTree as elementree
 import re
 
 class QBConn:
-	def __init__(self,url,appid,token=None, user_token=None,realm=""):
+	def __init__(self,url,appid,app_token=None, user_token=None,realm=None):
 		self.url = url
-		self.token = token
+		self.app_token = app_token
 		self.user_token = user_token
 		self.appid = appid
 		self.ticket = None
@@ -40,10 +40,11 @@ class QBConn:
 		else:
 			params['ticket'] = self.ticket
 			
-		params['apptoken'] = self.token
-		params['realmhost'] = self.realm
-		urlparams = urllib.parse.urlencode(params) #Use this line for Python > 3
-		resp = urllib.request.FancyURLopener().open(url+"?"+urlparams).read() #Use this line for Python > 3
+		params['apptoken'] = self.app_token
+		if self.realm:
+			params['realmhost'] = self.realm
+		urlparams = urllib.parse.urlencode(params)
+		resp = urllib.request.FancyURLopener().open(url+"?"+urlparams).read()
 		if re.match('^\<\?xml version=',resp.decode("utf-8")) == None:
 			print("No useful data received")
 			self.error = -1		#No XML data returned
@@ -212,6 +213,3 @@ class QBConn:
 				else:
 					break
 			return self.purgeRecords(tid,querystr)
-
-
-
