@@ -1,9 +1,9 @@
 #!/usr/bin/python
-
 # RMI commits to python 3.6.5+
-import urllib.request, urllib.parse, urllib.error #Use this for Python > 3
+import urllib.request, urllib.parse #Use this for Python > 3
 import xml.etree.ElementTree as elementree
 import re
+#import pdb
 
 class QBConn:
 	def __init__(self,url,appid,app_token=None, user_token=None,realm=None):
@@ -44,7 +44,8 @@ class QBConn:
 		if self.realm:
 			params['realmhost'] = self.realm
 		urlparams = urllib.parse.urlencode(params)
-		resp = urllib.request.FancyURLopener().open(url+"?"+urlparams).read()
+		final_url = url+"?"+urlparams
+		resp = urllib.request.urlopen(final_url).read()
 		if re.match(r'^\<\?xml version=',resp.decode("utf-8")) == None:
 			print("No useful data received")
 			self.error = -1		#No XML data returned
