@@ -118,8 +118,9 @@ class QBConn:
 
 	#Executes a query on tableID
 	#Returns a list of dicts containing fieldname:value pairs. record ID will always be specified by the "rid" key
-	def query(self,tableID,query, clist=None):
-		params = dict(query)
+	def query(self,tableID,query,clist=None):
+		params = dict()
+		params['query'] = query
 		if clist:
 			params['clist'] = clist
 		params['act'] = "API_DoQuery"
@@ -127,7 +128,6 @@ class QBConn:
 		params['fmt'] = "structured"
 		records = self.request(params,tableID).find('table').find('records')
 		data = []
-
 		fields = {fid:name for name,fid in list(self.getFields(tableID).items())}
 		for record in records:
 			temp = {}
