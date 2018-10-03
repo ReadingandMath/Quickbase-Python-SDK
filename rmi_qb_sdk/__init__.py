@@ -94,6 +94,8 @@ class QBConn:
 	def getFields(self,tableID):
 		params = {'act':'API_GetSchema'}
 		schema = self.request(params,tableID)
+		# it would be really nice if there were a caching policy
+		# we'll use cachetools or equivalent in rmiAPI
 		fields = schema.find('table').find('fields')
 		fieldlist = {}
 		for field in fields:
@@ -116,13 +118,16 @@ class QBConn:
 
 	#Executes a query on tableID
 	#Returns a list of dicts containing fieldname:value pairs. record ID will always be specified by the "rid" key
-	def query(self,tableID,query):
+	def query(self,tableID,query, clist=None):
 		params = dict(query)
+		if clist:
+			params['clist'] = clist
 		params['act'] = "API_DoQuery"
 		params['includeRids'] = '1'
 		params['fmt'] = "structured"
 		records = self.request(params,tableID).find('table').find('records')
 		data = []
+
 		fields = {fid:name for name,fid in list(self.getFields(tableID).items())}
 		for record in records:
 			temp = {}
