@@ -1,4 +1,7 @@
 #!/usr/bin/python
+
+#MUST specify field names with ids in this sdk
+
 # RMI commits to python 3.6.5+
 import urllib.request, urllib.parse #Use this for Python > 3
 import xml.etree.ElementTree as elementree
@@ -56,26 +59,18 @@ class QBConn:
 
 	#Creates a record with the given data in the table specified by tableID
 	#Takes a tableID (you can get this using qb.tables["yourtable"])
-	#Also takes a dict containing field name:field value pairs
 	def addRecord(self,tableID,data):
-		fields = self.getFields(tableID)
 		params = {'act':'API_AddRecord'}
-		for field in data:
-				if field in fields:
-					params["_fid_"+fields[field]] = data[field]
+		for field_id in data:
+			params["_fid_"+str(field_id)] = data[field_id]
 		return self.request(params,tableID)
 
 	#Updates a reord with the given data
 	#Takes the record's table ID, record ID, a dict containing field:newvalue pairs, and an optional dict with param:value pairs
 	def editRecord(self,tableID,rid,newdata,options={}):
 		params = {'act':'API_EditRecord','rid':rid}
-		fields = self.getFields(tableID)
 		for key,value in list(newdata.items()):
-			if key.isdigit():
-				params["_fid_"+key] = value
-			else:
-				if key in fields:
-					params["_fid_"+fields[key]] = value
+			params["_fid_"+key] = value
 		params = dict(params,**options)
 		return self.request(params,tableID)
 
