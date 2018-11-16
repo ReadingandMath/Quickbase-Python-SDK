@@ -6,7 +6,8 @@
 import urllib.request, urllib.parse #Use this for Python > 3
 import xml.etree.ElementTree as elementree
 import re
-#import pdb
+from rmi_qb_sdk import error_codes
+import pdb
 
 class QBConn:
 	def __init__(self,url,appid,app_token=None, user_token=None,realm=None):
@@ -55,7 +56,10 @@ class QBConn:
 		else:
 			tree = elementree.fromstring(resp)
 			self.error = int(tree.find('errcode').text)
-			return tree
+			return {
+				"results": tree,
+				"error": error_codes.codes[self.error]
+			}
 
 	#Creates a record with the given data in the table specified by tableID
 	#Takes a tableID (you can get this using qb.tables["yourtable"])
@@ -63,7 +67,10 @@ class QBConn:
 		params = {'act':'API_AddRecord'}
 		for field_id in data:
 			params["_fid_"+str(field_id)] = data[field_id]
-		return self.request(params,tableID)
+		results = self.request(params,tableID)
+		if results["error"]["response_code"] == 200:
+			results["error"]["response_code"] = 201
+		return results
 
 	#Updates a reord with the given data
 	#Takes the record's table ID, record ID, a dict containing field:newvalue pairs, and an optional dict with param:value pairs
@@ -91,7 +98,7 @@ class QBConn:
 		schema = self.request(params,tableID)
 		# it would be really nice if there were a caching policy
 		# we'll use cachetools or equivalent in rmiAPI
-		fields = schema.find('table').find('fields')
+		fields = schema["results"].find('table').find('fields')
 		fieldlist = {}
 		for field in fields:
 			label = field.find('label').text.lower().replace(' ','')
@@ -105,7 +112,7 @@ class QBConn:
 			return {}
 		params = {'act':'API_GetSchema'}
 		schema = self.request(params,self.appid)
-		chdbs = schema.find('table').find('chdbids')
+		chdbs = schema["results"].find('table').find('chdbids')
 		tables = {}
 		for chdb in chdbs:
 			tables[chdb.attrib['name'][6:]] = chdb.text
@@ -121,7 +128,8 @@ class QBConn:
 		params['act'] = "API_DoQuery"
 		params['includeRids'] = '1'
 		params['fmt'] = "structured"
-		records = self.request(params,tableID).find('table').find('records')
+		result = self.request(params,tableID)["results"]
+		records = result.find('table').find('records')
 		data = []
 		fields = {fid:name for name,fid in list(self.getFields(tableID).items())}
 		for record in records:
