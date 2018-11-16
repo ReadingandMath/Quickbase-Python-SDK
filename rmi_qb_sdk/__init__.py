@@ -56,8 +56,11 @@ class QBConn:
 		else:
 			tree = elementree.fromstring(resp)
 			self.error = int(tree.find('errcode').text)
+			results = tree
+			if self.error != 0:
+				results: False
 			return {
-				"results": tree,
+				"results": results,
 				"error": error_codes.codes[self.error]
 			}
 
@@ -128,18 +131,26 @@ class QBConn:
 		params['act'] = "API_DoQuery"
 		params['includeRids'] = '1'
 		params['fmt'] = "structured"
-		result = self.request(params,tableID)["results"]
-		records = result.find('table').find('records')
-		data = []
-		fields = {fid:name for name,fid in list(self.getFields(tableID).items())}
-		for record in records:
-			temp = {}
-			temp['rid'] = record.attrib['rid']
-			for field in record:
-				if(field.tag == "f"):
-					temp[fields[field.attrib['id']]] = field.text
-			data.append(temp)
-		return data
+		results = self.request(params,tableID)
+		ret = {
+			"error": results["error"]
+		}
+		# not crazy about this...
+		if results["error"]["message"] == "No error":
+			records = results["results"].find('table').find('records')
+			data = []
+			fields = {fid:name for name,fid in list(self.getFields(tableID).items())}
+			for record in records:
+				temp = {}
+				temp['rid'] = record.attrib['rid']
+				for field in record:
+					if(field.tag == "f"):
+						temp[fields[field.attrib['id']]] = field.text
+				data.append(temp)
+			ret["results"] = data
+		else:
+			ret["results"] = None
+		return ret
 
 	#Emulates the syntax of basic (SELECT,DELETE) SQL queries
 	#Example: qb.sql("SELECT * FROM users WHERE name`EX`John\_Doe OR role`EX`fakeperson") #The \_ represents a space. This is a very basic function that doesn't use state machines. Note: field and table names will not have spaces
