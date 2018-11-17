@@ -58,7 +58,7 @@ class QBConn:
 			self.error = int(tree.find('errcode').text)
 			results = tree
 			if self.error != 0:
-				results: False
+				results =  False
 			return {
 				"results": results,
 				"error": error_codes.codes[self.error]
