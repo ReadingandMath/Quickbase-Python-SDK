@@ -7,7 +7,6 @@ import urllib.request, urllib.parse #Use this for Python > 3
 import xml.etree.ElementTree as elementree
 import re
 from rmi_qb_sdk import error_codes
-import pdb
 
 class QBConn:
 	def __init__(self,url,appid,app_token=None, user_token=None,realm=None):
@@ -108,6 +107,26 @@ class QBConn:
 			fieldlist[label] = field.attrib['id']
 		return fieldlist
 
+	#Returns a dict containing fieldid:choices associated with that field
+	#(for multiselect)
+	#ideally, this wouldn't need a separate GetSchema call
+	#but I didn't want to rewrite the getFields api at this time
+	def getChoices(self,tableID):
+		params = {'act':'API_GetSchema'}
+		schema = self.request(params,tableID)
+		# it would be really nice if there were a caching policy
+		# we'll use cachetools or equivalent in rmiAPI
+		fields = schema["results"].find('table').find('fields')
+		fieldlist = {}
+		for field in fields:
+			choices = None
+			if field.find('choices'):
+				choices = []
+				for choice in field.find('choices'):
+					choices.append(choice.text)
+				fieldlist[field.attrib['id']] = choices
+		return fieldlist
+
 	#Returns a dict of tablename:tableID pairs
 	#This is called automatically after successful authentication
 	def _getTables(self):
@@ -156,7 +175,7 @@ class QBConn:
 	#Example: qb.sql("SELECT * FROM users WHERE name`EX`John\_Doe OR role`EX`fakeperson") #The \_ represents a space. This is a very basic function that doesn't use state machines. Note: field and table names will not have spaces
 	#Example: qb.sql("SELECT firstname|lastname FROM users WHERE paid`EX`true ORDER BY lastname ASC LIMIT 100")
 	#Example: qb.sql("DELETE FROM assets WHERE value`BF`0")
-	#I encourage you to modify this to suit your needs. Please contribute this back to the Python-QuickBase-SDK repository. Give QuickBase the API it deserves...
+	#RMI: Not sure that I see the point of this for us, but leaving it in for now.
 	def sql(self,querystr):
 		tokens = querystr.split(" ")
 		if tokens[0] == "SELECT":
