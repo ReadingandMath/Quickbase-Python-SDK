@@ -104,7 +104,10 @@ class QBConn:
 		fieldlist = {}
 		for field in fields:
 			label = field.find('label').text.lower().replace(' ','')
-			fieldlist[label] = field.attrib['id']
+			fieldlist[label] = {
+				"id": field.attrib['id'],
+				"type": field.attrib['field_type']
+			}
 		return fieldlist
 
 	#Returns a dict containing fieldid:choices associated with that field
@@ -158,7 +161,7 @@ class QBConn:
 		if results["error"]["message"] == "No error":
 			records = results["results"].find('table').find('records')
 			data = []
-			fields = {fid:name for name,fid in list(self.getFields(tableID).items())}
+			fields = {fid["id"]:name for name,fid in list(self.getFields(tableID).items())}
 			for record in records:
 				temp = {}
 				temp['rid'] = record.attrib['rid']
