@@ -145,11 +145,13 @@ class QBConn:
 
 	#Executes a query on tableID
 	#Returns a list of dicts containing fieldname:value pairs. record ID will always be specified by the "rid" key
-	def query(self,tableID,query,clist=None):
+	def query(self,tableID,query,qid, clist=None):
 		params = dict()
 		params['query'] = query
 		if clist:
 			params['clist'] = clist
+		if qid:
+			params['qid'] = qid
 		params['act'] = "API_DoQuery"
 		params['includeRids'] = '1'
 		params['fmt'] = "structured"
