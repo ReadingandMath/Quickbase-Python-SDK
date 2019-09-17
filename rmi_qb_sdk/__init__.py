@@ -30,7 +30,7 @@ class QBConn:
 			return
 
 		else:
-			self.ticket = resp.find("ticket").text
+			self.ticket = resp["results"].find("ticket").text
 			self.tables = self._getTables()
 
 	#Adds the appropriate fields to the request and sends it to QB
