@@ -6,6 +6,7 @@
 import urllib.request, urllib.parse #Use this for Python > 3
 import xml.etree.ElementTree as elementree
 import re
+import datetime
 from rmi_qb_sdk import error_codes
 
 class QBConn:
@@ -14,7 +15,9 @@ class QBConn:
 		self.app_token = app_token
 		self.user_token = user_token
 		self.appid = appid
-		self.ticket = None
+		self.username = None
+		self.password = None
+		self.ticket = None 
 		self.realm = realm	#This allows one QuickBase realm to proxy for another
 		self.error = 0		#Set after every API call. A non-zero value indicates an error. A negative value indicates an error with this library
 		self.tables = {}
@@ -23,19 +26,30 @@ class QBConn:
 		if self.user_token:
 			self.tables = self._getTables()
 			return
-				
+		if username == None:
+			username = self.username
+		if password == None:
+			password = self.password
 		params = {'act':'API_Authenticate','username':username,'password':password}
+		# QB tickets expire every 12 hours by default
+		# so let's get a new ticket after 11 hours and 59 minutes
+		self.ticket_expires_after = datetime.datetime.now() + datetime.timedelta(0,43140)
 		resp = self.request(params,'main')
 		if self.error != 0:
 			return
 
 		else:
+			self.username = username
+			self.password = password
 			self.ticket = resp["results"].find("ticket").text
 			self.tables = self._getTables()
 
 	#Adds the appropriate fields to the request and sends it to QB
 	#Takes a dict of parameter:value pairs and the url extension (main or your table ID, mostly)
 	def request(self,params,url_ext):
+		if datetime.datetime.now() > self.ticket_expires_after:
+			# ticket has expired; reauthenticate
+			self.authenticate()
 		url = self.url
 		url += url_ext		
 		if self.user_token:
