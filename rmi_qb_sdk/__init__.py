@@ -43,6 +43,7 @@ class QBConn:
 			self.password = password
 			self.ticket = resp["results"].find("ticket").text
 			self.tables = self._getTables()
+			return self.tables
 
 	#Adds the appropriate fields to the request and sends it to QB
 	#Takes a dict of parameter:value pairs and the url extension (main or your table ID, mostly)
