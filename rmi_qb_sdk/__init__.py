@@ -25,7 +25,8 @@ class QBConn:
 	def authenticate(self,username=None,password=None):
 		if self.user_token:
 			self.tables = self._getTables()
-			return
+			return self.tables
+						
 		if username == None:
 			username = self.username
 		if password == None:
