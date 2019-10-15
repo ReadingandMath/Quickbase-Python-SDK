@@ -116,7 +116,11 @@ class QBConn:
 		table = schema["results"].find('table')
 		ret = {}
 		ret["name"] = table.find('name').text
-		ret["desc"] = table.find('desc').text
+		desc = table.find('desc')
+		if desc:
+			ret["desc"] = desc.text
+		else:
+			ret["desc"] = ''
 		original = table.find('original')
 		ret["creation_date"] = original.find('cre_date').text
 		ret["modify_date"] = original.find('mod_date').text
