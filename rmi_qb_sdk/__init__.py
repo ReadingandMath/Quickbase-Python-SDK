@@ -109,13 +109,27 @@ class QBConn:
 		params = {'act':'API_PurgeRecords','query':query}
 		return self.request(params,tableID)
 
+	#Returns a dict containing table metadata
+	def getTableMetadata(self,tableID):
+		params = {'act':'API_GetSchema'}
+		schema = self.request(params,tableID)
+		table = schema["results"].find('table')
+		ret = {}
+		ret["name"] = table.find('name').text
+		ret["desc"] = table.find('desc').text
+		original = table.find('original')
+		ret["creation_date"] = original.find('cre_date').text
+		ret["modify_date"] = original.find('mod_date').text
+		ret["next_record_id"] = original.find('next_record_id').text
+		ret["next_field_id"] = original.find('next_field_id').text
+		ret["next_report_id"] = original.find('next_query_id').text
+		return ret
+
 	#Returns a dict containing fieldname:fieldid pairs
 	#Field names will have spaces replaced with not spaces
 	def getFields(self,tableID):
 		params = {'act':'API_GetSchema'}
 		schema = self.request(params,tableID)
-		# it would be really nice if there were a caching policy
-		# we'll use cachetools or equivalent in rmiAPI
 		fields = schema["results"].find('table').find('fields')
 		fieldlist = {}
 		for field in fields:
