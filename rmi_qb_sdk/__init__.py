@@ -8,6 +8,8 @@ import xml.etree.ElementTree as elementree
 import re
 import datetime
 from rmi_qb_sdk import error_codes
+import logging
+logging.basicConfig(level=logging.INFO)
 
 class QBConn:
 	def __init__(self,url,appid,app_token=None, user_token=None,realm=None):
@@ -23,6 +25,7 @@ class QBConn:
 		self.tables = {}
 
 	def authenticate(self,username=None,password=None):
+		logging.info('authenticating')
 		if self.user_token:
 			self.tables = self._getTables()
 			return self.tables
@@ -49,8 +52,9 @@ class QBConn:
 	#Adds the appropriate fields to the request and sends it to QB
 	#Takes a dict of parameter:value pairs and the url extension (main or your table ID, mostly)
 	def request(self,params,url_ext):
-		if datetime.datetime.now() > self.ticket_expires_after:
+		if not self.ticket_expires_after or datetime.datetime.now() > self.ticket_expires_after:
 			# ticket has expired; reauthenticate
+			logging.info('no ticket or ticket expired; reauthenticating')
 			self.authenticate()
 		url = self.url
 		url += url_ext		
