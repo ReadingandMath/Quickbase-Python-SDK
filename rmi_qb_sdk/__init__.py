@@ -12,60 +12,34 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 class QBConn:
-	def __init__(self,url,appid,app_token=None, user_token=None,realm=None):
+	def __init__(self,url,appid,user_token):
 		self.url = url
-		self.app_token = app_token
+		if not user_token:
+			logging.critical('attempted connect with no user token; exiting')
+			exit()
 		self.user_token = user_token
 		self.appid = appid
-		self.username = None
-		self.password = None
-		self.ticket = None 
-		self.realm = realm	#This allows one QuickBase realm to proxy for another
 		self.error = 0		#Set after every API call. A non-zero value indicates an error. A negative value indicates an error with this library
-		self.tables = {}
+		self._refetchTables()
 
-	def authenticate(self,username=None,password=None):
-		logging.info('authenticating')
-		if self.user_token:
-			self.tables = self._getTables()
-			return self.tables
-						
-		if username == None:
-			username = self.username
-		if password == None:
-			password = self.password
-		params = {'act':'API_Authenticate','username':username,'password':password}
-		# QB tickets expire every 12 hours by default
-		# so let's get a new ticket after 11 hours and 59 minutes
-		self.ticket_expires_after = datetime.datetime.now() + datetime.timedelta(0,43140)
-		resp = self.request(params,'main')
-		if self.error != 0:
-			return
+	def _refetchTables(self):
+		logging.info('tables expired; reauthenticating')
+		self.tables_expire_after = datetime.datetime.now() + datetime.timedelta(0,3600)
+		self.tables = self._getTables()
 
-		else:
-			self.username = username
-			self.password = password
-			self.ticket = resp["results"].find("ticket").text
-			self.tables = self._getTables()
-			return self.tables
+	def provide_tables(self):
+		return self.tables
 
 	#Adds the appropriate fields to the request and sends it to QB
 	#Takes a dict of parameter:value pairs and the url extension (main or your table ID, mostly)
 	def request(self,params,url_ext):
-		if not self.ticket_expires_after or datetime.datetime.now() > self.ticket_expires_after:
+		if not self.tables_expire_after or datetime.datetime.now() > self.tables_expire_after:
 			# ticket has expired; reauthenticate
-			logging.info('no ticket or ticket expired; reauthenticating')
-			self.authenticate()
+			self._refetchTables()
 		url = self.url
 		url += url_ext		
 		if self.user_token:
 			params['usertoken'] = self.user_token
-		else:
-			params['ticket'] = self.ticket
-			
-		params['apptoken'] = self.app_token
-		if self.realm:
-			params['realmhost'] = self.realm
 		urlparams = urllib.parse.urlencode(params)
 		final_url = url+"?"+urlparams
 		resp = urllib.request.urlopen(final_url).read()
