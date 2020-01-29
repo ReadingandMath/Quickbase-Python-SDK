@@ -11,15 +11,14 @@ QBConn variables:
 	error: the numerical error code returned by an API call. 0 is no error, negative values are internal to this library
 	tables: a dictionary containing tablename:tableID pairs
 	
-[constructor] QBConn(QB_URL,QB_APPID[,QB_TOKEN, QB_REALM]):
+[constructor] QBConn(QB_URL,QB_APPID, USER_TOKEN):
 
-	Makes a connection to the QuickBase specified by QB_URL and QB_APPID. Uses QB_TOKEN and QB_REALM if specified.
+	Makes a connection to the QuickBase specified by QB_URL and QB_APPID. As of 0.4.0, *requires* a USER_TOKEN; will not authenticate with a ticket
 	Note: QB_URL should have a trailing slash. ex. "https://intuitcorp.quickbase.com/db/";
-	
-authenticate(username,password):
 
-	Authenticates username and password with QuickBase and stores the returned ticket. The tables variable is populated on success
-	
+provide_tables:
+	exposes tables to public api
+
 sql(querystr):
 	Performs a query() after translating a simple SQL-style string to QuickBase's query format
 	
